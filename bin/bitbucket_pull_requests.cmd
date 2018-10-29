@@ -1,0 +1,1 @@
+@"%SPLUNK_HOME%"\bin\splunk cmd node "%~dp0\app\bitbucket_pull_requests.js" %*

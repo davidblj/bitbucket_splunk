@@ -1,0 +1,10 @@
+{
+    "name": "bitbucket_pull_requests",
+    "version": "0.0.1",
+    "description": "Splunk modular input for Bitbucket",
+    "main": "bitbucket_pull_requests.js",
+    "dependencies": {
+        "splunk-sdk": ">=1.4.0"
+    },
+    "author": "David Jaramillo"
+}
