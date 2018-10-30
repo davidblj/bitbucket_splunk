@@ -4,6 +4,7 @@
     "description": "Splunk modular input for Bitbucket",
     "main": "bitbucket_pull_requests.js",
     "dependencies": {
+        "bitbucket": "^1.5.0",
         "splunk-sdk": ">=1.4.0"
     },
     "author": "David Jaramillo"

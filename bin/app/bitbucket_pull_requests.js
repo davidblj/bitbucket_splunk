@@ -1,11 +1,15 @@
+
+
 (function() {
 
-    var splunkjs        = require("splunk-sdk");
-    var ModularInputs   = splunkjs.ModularInputs;
-    var Logger          = ModularInputs.Logger;
-    var Event           = ModularInputs.Event;
-    var Scheme          = ModularInputs.Scheme;
-    var Argument        = ModularInputs.Argument;
+    const splunkjs        = require("splunk-sdk");
+    const bitbucket       = require("bitbucket")
+
+    const ModularInputs   = splunkjs.ModularInputs;
+    const Logger          = ModularInputs.Logger;
+    const Event           = ModularInputs.Event;
+    const Scheme          = ModularInputs.Scheme;
+    const Argument        = ModularInputs.Argument;
 
     exports.getScheme = function() {
 
@@ -43,10 +47,23 @@
     exports.streamEvents = function(name, singleInput, eventWriter, done) {
 
         let username = singleInput.username;
-        let repository = singleInput.repository;
+        let repo_slug = singleInput.repository;
 
-        Logger.info(name, "success !:" + username + "/" + repository);
-        done();
+        try {
+
+            // let { data, headers } = await bitbucket.pullrequests.list({repo_slug, username})
+
+            // todo: log all of our repositories
+            Logger.info(name, "successfull response")
+            // Logger.info(name, data.pagelen)
+            done();
+
+        } catch (e) {
+
+            // todo: log error
+            Logger.error(name, "error fetching information");
+            done(e)
+        }        
     };
 
     ModularInputs.execute(exports, module);
