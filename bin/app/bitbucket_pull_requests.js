@@ -1,15 +1,14 @@
 
-
 (function() {
 
-    const splunkjs        = require("splunk-sdk");
-    const bitbucket       = require("bitbucket")
-
-    const ModularInputs   = splunkjs.ModularInputs;
-    const Logger          = ModularInputs.Logger;
-    const Event           = ModularInputs.Event;
-    const Scheme          = ModularInputs.Scheme;
-    const Argument        = ModularInputs.Argument;
+    const splunkjs = require("splunk-sdk");
+    const axios = require('axios');
+    
+    const ModularInputs = splunkjs.ModularInputs;
+    const Logger = ModularInputs.Logger;
+    const Event = ModularInputs.Event;
+    const Scheme = ModularInputs.Scheme;
+    const Argument = ModularInputs.Argument;
 
     exports.getScheme = function() {
 
@@ -49,21 +48,11 @@
         let username = singleInput.username;
         let repo_slug = singleInput.repository;
 
-        try {
+        axios.get(`https://api.bitbucket.org/2.0/repositories/davidblj/testing/pullrequests`)
 
-            // let { data, headers } = await bitbucket.pullrequests.list({repo_slug, username})
-
-            // todo: log all of our repositories
-            Logger.info(name, "successfull response")
-            // Logger.info(name, data.pagelen)
-            done();
-
-        } catch (e) {
-
-            // todo: log error
-            Logger.error(name, "error fetching information");
-            done(e)
-        }        
+        // todo: log all of our repositories
+        Logger.info(name, "successfull response")
+        done();
     };
 
     ModularInputs.execute(exports, module);
