@@ -49,10 +49,17 @@
         let repo_slug = singleInput.repository;
 
         axios.get(`https://api.bitbucket.org/2.0/repositories/davidblj/testing/pullrequests`)
+            .then(function(response) {
 
-        // todo: log all of our repositories
-        Logger.info(name, "successfull response")
-        done();
+                // todo: log all of our repositories
+                Logger.info(name, `successfull response. Page length is: ${response.data.pagelen}`);
+                done();  
+
+            }).catch(function(error) {
+
+                // todo: log the error
+                Logger.error(name, "something went terribly wrong");
+            })        
     };
 
     ModularInputs.execute(exports, module);
