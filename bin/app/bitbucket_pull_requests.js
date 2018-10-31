@@ -1,14 +1,13 @@
+const splunkjs = require("splunk-sdk");
+const axios = require('axios');
+
+const ModularInputs = splunkjs.ModularInputs;
+const Logger = ModularInputs.Logger;
+const Event = ModularInputs.Event;
+const Scheme = ModularInputs.Scheme;
+const Argument = ModularInputs.Argument;
 
 (function() {
-
-    const splunkjs = require("splunk-sdk");
-    const axios = require('axios');
-    
-    const ModularInputs = splunkjs.ModularInputs;
-    const Logger = ModularInputs.Logger;
-    const Event = ModularInputs.Event;
-    const Scheme = ModularInputs.Scheme;
-    const Argument = ModularInputs.Argument;
 
     exports.getScheme = function() {
 
@@ -48,19 +47,46 @@
         let username = singleInput.username;
         let repo_slug = singleInput.repository;
 
-        axios.get(`https://api.bitbucket.org/2.0/repositories/davidblj/testing/pullrequests`)
-            .then(function(response) {
+        axiosConfig()
 
-                // todo: log all of our repositories
-                Logger.info(name, `successfull response. Page length is: ${response.data.pagelen}`);
-                done();  
-
-            }).catch(function(error) {
-
-                // todo: log the error
-                Logger.error(name, "something went terribly wrong");
-            })        
+        axios.get(`repositories/davidblj/testing/pullrequests`)
+            .then(handleResponse(name, done))
+            .catch(handleError(name, done))        
     };
 
     ModularInputs.execute(exports, module);
 })();
+
+
+function axiosConfig() {
+    axios.defaults.baseURL = 'https://api.bitbucket.org/2.0/';
+}
+
+function handleResponse(name, done) {
+    
+    return (response) => {
+
+        Logger.info(name, `this function is a success. Page length is: ${response.data.pagelen}`);
+        done(); 
+    }
+}
+
+function handleError(name, done) {
+
+    return (error) => {
+
+        if (error.response) {
+
+            Logger.error(name, `data: ${error.response.data} \n
+                                status: ${error.response.status} \n
+                                headers: ${error.response.headers}`)            
+        } else if (error.request) {            
+            Logger.error(name, `no server response: ${JSON.stringify(error.request)}`)            
+        } else {
+            Logger.error(name, `configuration not set properly: ${error.message}`)           
+        }
+
+        Logger.error(name, `config log: ${JSON.stringify(error.config)}`)                
+        done(error)
+    }
+}
