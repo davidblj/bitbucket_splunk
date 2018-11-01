@@ -1,45 +1,56 @@
 const splunkjs = require("splunk-sdk");
 const axios = require('axios');
+const btoa = require('btoa')
 
 const Async = splunkjs.Async;
 const ModularInputs = splunkjs.ModularInputs;
+const Event = ModularInputs.Event;
 const Logger = ModularInputs.Logger;
 
 module.exports = (name, singleInput, eventWriter, done) => {
 
-    // todo: use these values to make a request
-    let username = singleInput.username;
+    let owner = singleInput.owner;
     let repo_slug = singleInput.repository;
+    let user = singleInput.user;
+    let password = singleInput.password;
 
-    axiosConfig()
+    Logger.info(name, `user is: ${user}, and password is ${password}`)
+
+    axiosConfig(owner, repo_slug, user, password)
 
     let hasNextPageRef = {};
     hasNextPageRef.state = true;
 
     Async.whilst(() => hasNextPageRef.state,
-                 getPage(hasNextPageRef, name, done),
+                 getPage(hasNextPageRef, eventWriter, name, done),
                  callback(done))
 }
 
-function axiosConfig() {
-    axios.defaults.baseURL = 'https://api.bitbucket.org/2.0/';
+function axiosConfig(owner, repo_slug, user, password) {
+    
+    axios.defaults.baseURL = `https://api.bitbucket.org/2.0/repositories/${owner}/${repo_slug}/`;
+    
+    let encondedAuthentication = btoa(`${user}:${password}`);
+    Logger.info(`encoded auth is ${encondedAuthentication}`);
+
+    axios.defaults.headers.common['Authorization'] = `Basic ${encondedAuthentication}`
 }
 
-// function_2: iterate through the pages, modify the boolean (which stops the stream) and stop iterating. 
-function getPage(hasNextPageRef, name, done) {
+// todo: iterate through the pages, modify the boolean (which stops the stream) and stop iterating. 
+function getPage(hasNextPageRef, eventWriter, name, done) {
 
     return (callback) => {
         
         // while link.next, do not change the iteratee boolean, and use currentPageRef
         hasNextPageRef.state = false;
 
-        axios.get(`repositories/davidblj/testing/pullrequests`)
-            .then(handleResponse(name, callback))
+        axios.get(`pullrequests`)
+            .then(handleResponse(name, eventWriter, callback))
             .catch(handleError(name, callback, done));            
     }
 }
 
-// function_3: finalize the execution, call done or done(error)
+// todo: finalize the execution, call done or done(error)
 function callback(done) {
 
     return (error) => {
@@ -52,28 +63,20 @@ function callback(done) {
     }
 }
 
-function handleResponse(name, callback) {
+function handleResponse(name, eventWriter, callback) {
     
     return (response) => {
 
-        // iterate
         let pullRequests = response.data.values;
 
         for(let i = 0; i < pullRequests.length; i++) {
 
             let pullRequest = pullRequests[i];
-
-            let pullRequestId = pullRequest.id;
-            let destinationBranch = pullRequest.destination.branch.name;
-            let sourceBranch = pullRequest.source.branch.name;
-            let pullRequestName = pullRequest.title;
-
-            Logger.info(name, `id: ${pullRequestId}, title: ${pullRequestName} , destination branch: ${destinationBranch}, source branch: ${sourceBranch}`);
+            let event = buildEvent(pullRequest)            
+            eventWriter.writeEvent(event);      // catch errors 
         }
 
         callback(null)
-        
-        // todo: use done when an error is thrown 
     }
 }
 
@@ -97,4 +100,25 @@ function handleError(name, callback, done) {
         callback(error);
         done(error);
     }
+}
+
+function buildEvent(pullRequest) {
+
+    let data = {
+        id: pullRequest.id,
+        title: pullRequest.title,
+        to_branch: pullRequest.destination.branch.name,
+        from_branch: pullRequest.source.branch.name,
+        author: pullRequest.author.username,
+        state: pullRequest.state, 
+        from_repo: pullRequest.destination.repository.name,
+        to_repo: pullRequest.source.repository.name,                        
+    };
+
+    return new Event({
+        stanza: pullRequest.title,
+        sourcetype: "bitbucket_prs",
+        data: data,
+        time: Date.parse(pullRequest.created_on)
+    });
 }

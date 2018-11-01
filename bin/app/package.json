@@ -6,6 +6,7 @@
     "dependencies": {
         "axios": "^0.18.0",
         "bitbucket": "^1.5.0",
+        "btoa": "^1.2.1",
         "splunk-sdk": ">=1.4.0"
     },
     "author": "David Jaramillo"
