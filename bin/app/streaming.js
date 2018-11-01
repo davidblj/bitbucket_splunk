@@ -14,15 +14,15 @@ module.exports = (name, singleInput, eventWriter, done) => {
     let user = singleInput.user;
     let password = singleInput.password;
 
-    Logger.info(name, `user is: ${user}, and password is ${password}`)
-
     axiosConfig(owner, repo_slug, user, password)
 
-    let hasNextPageRef = {};
-    hasNextPageRef.state = true;
+    let pageRef = {
+        hasNextPage: true,
+        nextPageLink: "pullrequests"
+    }
 
-    Async.whilst(() => hasNextPageRef.state,
-                 getPage(hasNextPageRef, eventWriter, name, done),
+    Async.whilst(() => pageRef.hasNextPage,
+                 getPage(pageRef, eventWriter, name, done),
                  callback(done))
 }
 
@@ -31,26 +31,21 @@ function axiosConfig(owner, repo_slug, user, password) {
     axios.defaults.baseURL = `https://api.bitbucket.org/2.0/repositories/${owner}/${repo_slug}/`;
     
     let encondedAuthentication = btoa(`${user}:${password}`);
-    Logger.info(`encoded auth is ${encondedAuthentication}`);
-
     axios.defaults.headers.common['Authorization'] = `Basic ${encondedAuthentication}`
 }
 
-// todo: iterate through the pages, modify the boolean (which stops the stream) and stop iterating. 
-function getPage(hasNextPageRef, eventWriter, name, done) {
+function getPage(pageRef, eventWriter, name, done) {
 
     return (callback) => {
         
-        // while link.next, do not change the iteratee boolean, and use currentPageRef
-        hasNextPageRef.state = false;
+        Logger.info(name, "This must print once")
 
-        axios.get(`pullrequests`)
-            .then(handleResponse(name, eventWriter, callback))
-            .catch(handleError(name, callback, done));            
+        axios.get(pageRef.nextPageLink)
+            .then(handleResponse(pageRef, name, eventWriter, callback))
+            .catch(handleError(name, callback));            
     }
 }
 
-// todo: finalize the execution, call done or done(error)
 function callback(done) {
 
     return (error) => {
@@ -63,7 +58,7 @@ function callback(done) {
     }
 }
 
-function handleResponse(name, eventWriter, callback) {
+function handleResponse(pageRef, name, eventWriter, callback) {
     
     return (response) => {
 
@@ -73,14 +68,23 @@ function handleResponse(name, eventWriter, callback) {
 
             let pullRequest = pullRequests[i];
             let event = buildEvent(pullRequest)            
-            eventWriter.writeEvent(event);      // catch errors 
+            eventWriter.writeEvent(event);      // catch errors (pass down error)
         }
 
+        let nextPageLink = pullRequests.next;
+        Logger.info(name, `next page is: ${nextPageLink}`)
+        
+        if (nextPageLink) {
+            pageRef.nextPageLink = nextPageLink;
+        } else {
+            pageRef.hasNextPage = false;
+        }
+        
         callback(null)
     }
 }
 
-function handleError(name, callback, done) {
+function handleError(name, callback) {
 
     return (error) => {
 
@@ -98,7 +102,6 @@ function handleError(name, callback, done) {
         Logger.error(name, `config log: ${JSON.stringify(error.config)}`);                
         
         callback(error);
-        done(error);
     }
 }
 
