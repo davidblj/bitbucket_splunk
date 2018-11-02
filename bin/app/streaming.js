@@ -71,7 +71,7 @@ function handleResponse(pageRef, name, eventWriter, callback) {
             eventWriter.writeEvent(event);      // catch errors (pass down error)
         }
 
-        let nextPageLink = pullRequests.next;
+        let nextPageLink = response.data.next;
         Logger.info(name, `next page is: ${nextPageLink}`)
         
         if (nextPageLink) {
