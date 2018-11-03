@@ -1,6 +1,7 @@
 const splunkjs = require("splunk-sdk");
 const axios = require('axios');
-const btoa = require('btoa')
+const btoa = require('btoa');
+const bitbucketAPI = require('./bitbucketAPI');
 
 const Async = splunkjs.Async;
 const ModularInputs = splunkjs.ModularInputs;
@@ -9,13 +10,21 @@ const Logger = ModularInputs.Logger;
 
 module.exports = (name, singleInput, eventWriter, done) => {
 
+    // this should definitly be an object 
     let owner = singleInput.owner;
     let repo_slug = singleInput.repository;
     let user = singleInput.user;
     let password = singleInput.password;
 
-    axiosConfig(owner, repo_slug, user, password)
+    // make an axios a new module
+    axiosConfig(owner, repo_slug, user, password);
 
+    bitbucketAPI.getLastEventId(name, getPullRequests);
+}
+
+function getPullRequests(idLowerBound) {
+
+    // todo: use the idLowerBound
     let pageRef = {
         hasNextPage: true,
         nextPageLink: "pullrequests"
@@ -37,8 +46,6 @@ function axiosConfig(owner, repo_slug, user, password) {
 function getPage(pageRef, eventWriter, name, done) {
 
     return (callback) => {
-        
-        Logger.info(name, "This must print once")
 
         axios.get(pageRef.nextPageLink)
             .then(handleResponse(pageRef, name, eventWriter, callback))
