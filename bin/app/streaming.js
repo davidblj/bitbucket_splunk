@@ -19,10 +19,13 @@ module.exports = (name, singleInput, eventWriter, done) => {
     // make an axios a new module
     axiosConfig(owner, repo_slug, user, password);
 
-    bitbucketAPI.getLastEventId(name, getPullRequests);
+    let callback = getPullRequests(eventWriter, name, done);
+    bitbucketAPI.getLastIndexedEventId(name, repo_slug, callback);
 }
 
-function getPullRequests(idLowerBound) {
+function getPullRequests(eventWriter, name, done) {
+
+    return (idLimit) => {
 
     // todo: use the idLowerBound
     let pageRef = {
@@ -33,6 +36,7 @@ function getPullRequests(idLowerBound) {
     Async.whilst(() => pageRef.hasNextPage,
                  getPage(pageRef, eventWriter, name, done),
                  callback(done))
+    }
 }
 
 function axiosConfig(owner, repo_slug, user, password) {
@@ -74,7 +78,7 @@ function handleResponse(pageRef, name, eventWriter, callback) {
         for(let i = 0; i < pullRequests.length; i++) {
 
             let pullRequest = pullRequests[i];
-            let event = buildEvent(pullRequest)            
+            let event = buildEvent(name, pullRequest)            
             eventWriter.writeEvent(event);      // catch errors (pass down error)
         }
 
@@ -94,25 +98,28 @@ function handleResponse(pageRef, name, eventWriter, callback) {
 function handleError(name, callback) {
 
     return (error) => {
+ 
+        if (error.response) {  
 
-        // make "done" to work. 
-        if (error.response) {          
             Logger.error(name, `data: ${error.response.data} \n
                                 status: ${error.response.status} \n
                                 headers: ${error.response.headers}`);            
+
         } else if (error.request) {            
+
             Logger.error(name, `no server response: ${JSON.stringify(error.request)}`);            
+
         } else {
+
             Logger.error(name, `configuration not set properly: ${error.message}`);           
         }
 
         Logger.error(name, `config log: ${JSON.stringify(error.config)}`);                
-        
         callback(error);
     }
 }
 
-function buildEvent(pullRequest) {
+function buildEvent(name, pullRequest) {
 
     let data = {
         id: pullRequest.id,
@@ -126,7 +133,7 @@ function buildEvent(pullRequest) {
     };
 
     return new Event({
-        stanza: pullRequest.title,
+        stanza: name,
         sourcetype: "bitbucket_prs",
         data: data,
         time: Date.parse(pullRequest.created_on)

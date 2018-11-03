@@ -12,4 +12,4 @@ function execute() {
     exports.streamEvents = Streaming;
 
     ModularInputs.execute(exports, module);
-};
+}
