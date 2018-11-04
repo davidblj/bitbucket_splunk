@@ -3,13 +3,19 @@ const axios = require('axios');
 const btoa = require('btoa');
 const splunk = require('./splunk');
 const http = require('./http');
+const config = require('./config');
+const logger = require('./logger');
 
 const Async = splunkjs.Async;
 const ModularInputs = splunkjs.ModularInputs;
 const Event = ModularInputs.Event;
 const Logger = ModularInputs.Logger;
+const stream = config.stream;
 
 module.exports = (name, singleInput, eventWriter, done) => {
+
+    stream.initialize({name, singleInput, eventWriter, done});
+    logger.info("this is neat");
 
     // this should definitly be an object 
     let owner = singleInput.owner;
