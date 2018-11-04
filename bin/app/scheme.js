@@ -1,4 +1,4 @@
-const splunkjs = require("splunk-sdk");
+const splunkjs = require('splunk-sdk');
 
 const ModularInputs = splunkjs.ModularInputs;
 const Scheme = ModularInputs.Scheme;

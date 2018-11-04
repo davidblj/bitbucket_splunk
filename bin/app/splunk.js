@@ -1,4 +1,4 @@
-const splunkjs = require("splunk-sdk");
+const splunkjs = require('splunk-sdk');
 const Logger = splunkjs.ModularInputs.Logger;
 
 function getLastIndexedEventId(name, repo_slug, callback) {
