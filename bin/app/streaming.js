@@ -17,7 +17,7 @@ module.exports = (name, singleInput, eventWriter, done) => {
     let user = singleInput.user;
     let password = singleInput.password;
 
-    // make an axios a new module
+    // make axios a new module
     axiosConfig(owner, repo_slug, user, password);
 
     let callback = getPullRequests(eventWriter, name, done);

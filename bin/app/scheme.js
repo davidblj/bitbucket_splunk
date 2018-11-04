@@ -8,9 +8,9 @@ module.exports = () => {
 
     var scheme = new Scheme("Bitbucket pull requests");
 
-        scheme.description = "Transforma la informacion asociada a los pull requests de un repositorio de Bitbucket en eventos indexables de Splunk";
+        scheme.description = "Transforma la informacion asociada a los pull requests de un repositorio de Bitbucket en eventos indexables de Splunk.";
         scheme.useExternalValidation = false;  
-        scheme.useSingleInstance = true;
+        scheme.useSingleInstance = false;
 
         scheme.args = [
             new Argument({

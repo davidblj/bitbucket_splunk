@@ -2,7 +2,7 @@
 function buildQuery(eventId) {
 
     let stateConstraint = "(state=\"OPEN\" OR state=\"MERGED\")";
-    let pageLength = "pagelen=1";
+    let pageLength = "pagelen=25";
 
     if (eventId) {
         
