@@ -1,24 +1,28 @@
 const splunkjs = require('splunk-sdk');
-const Logger = splunkjs.ModularInputs.Logger;
+const config = require('./config');
+const logger = require('./logger');
 
-function getLastIndexedEventId(name, repo_slug, callback) {
+const Logger = splunkjs.ModularInputs.Logger;
+const stream = config.stream;
+
+function getLastIndexedEventId(callback) {
     
     let session = getSession();
-    let searchQuery = `search source=${name} to_repo="${repo_slug}" | sort -id | head 1`;
-    Logger.info(name, `issued query: ${searchQuery}`);
+    let searchQuery = `search source=${stream.stanzaName()} to_repo="${stream.repoSlugInput()}" | sort -id | head 1`;
+    logger.info(`issued query: ${searchQuery}`);
 
     session.oneshotSearch(searchQuery, {output_mode: "JSON"}, function(error, response) {
 
         if (error) {            
             
-            Logger.error(name, `search failed: ${error}`);                       
+            logger.error(`search failed: ${error}`);                       
             // SCRIPT DIES HERE
 
         } else {
             
             let lastIndexedId = getLastId(response);
-            Logger.info(name, `oneshotSearch response: ${JSON.stringify(response)}`);
-            Logger.info(name, `last id retrieved: ${lastIndexedId}`);
+            logger.info(`oneshotSearch response: ${JSON.stringify(response)}`);
+            logger.info(`last id retrieved: ${lastIndexedId}`);
             
             callback(lastIndexedId);
         }
@@ -49,5 +53,5 @@ function getLastId(response) {
 }
 
 module.exports = {
-    getLastIndexedEventId: getLastIndexedEventId
+    getLastIndexedEventId
 }

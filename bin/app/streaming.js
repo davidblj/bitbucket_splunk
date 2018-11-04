@@ -14,85 +14,67 @@ const stream = config.stream;
 
 module.exports = (name, singleInput, eventWriter, done) => {
 
-    stream.initialize({name, singleInput, eventWriter, done});
-    logger.info("this is neat");
+    stream.initialize({name, singleInput, eventWriter, done});    
 
-    // this should definitly be an object 
-    let owner = singleInput.owner;
-    let repo_slug = singleInput.repository;
-    let user = singleInput.user;
-    let password = singleInput.password;
+    axiosConfig();
 
-    // make axios a new module
-    axiosConfig(owner, repo_slug, user, password);
-
-    let callback = getPullRequests(eventWriter, name, done);
-    splunk.getLastIndexedEventId(name, repo_slug, callback);
+    let callback = getPullRequests();
+    splunk.getLastIndexedEventId(callback);
 }
 
-function getPullRequests(eventWriter, name, done) {
+function getPullRequests() {
 
     return (lastIndexedId) => {
 
-    let firstLink = http.buildQuery(lastIndexedId);
-    Logger.info(name, `initial URI link: ${firstLink}`);
+        let firstLink = http.buildQuery(lastIndexedId);
+        logger.info(`initial URI link: ${firstLink}`);
 
-    let pageRef = {
-        hasNextPage: true,
-        nextPageLink: firstLink
-    }
+        let pageRef = {
+            hasNextPage: true,
+            nextPageLink: firstLink
+        }
 
-    Async.whilst(() => pageRef.hasNextPage,
-                 getPage(pageRef, eventWriter, name, done),
-                 callback(done))
+        Async.whilst(() => pageRef.hasNextPage,
+                    getPage(pageRef),
+                    callback())
     }
 }
 
-function axiosConfig(owner, repo_slug, user, password) {
+function axiosConfig() {
     
-    axios.defaults.baseURL = `https://api.bitbucket.org/2.0/repositories/${owner}/${repo_slug}/`;
+    axios.defaults.baseURL = `https://api.bitbucket.org/2.0/repositories/${stream.ownerInput()}/${stream.repoSlugInput()}/`;
     
-    let encondedAuthentication = btoa(`${user}:${password}`);
+    let encondedAuthentication = btoa(`${stream.userInput()}:${stream.passwordInput()}`);
     axios.defaults.headers.common['Authorization'] = `Basic ${encondedAuthentication}`
 }
 
-function getPage(pageRef, eventWriter, name, done) {
+function getPage(pageRef) {
 
     return (callback) => {
 
         axios.get(pageRef.nextPageLink)
-            .then(handleResponse(pageRef, name, eventWriter, callback))
-            .catch(handleError(name, callback));            
+            .then(handleResponse(pageRef, callback))
+            .catch(handleError(callback));            
     }
 }
 
-function callback(done) {
-
-    return (error) => {
-
-        if (error) {
-            done(error)
-        } else {
-            done()
-        }
-    }
-}
-
-function handleResponse(pageRef, name, eventWriter, callback) {
+function handleResponse(pageRef, callback) {
     
     return (response) => {
 
-        let pullRequests = response.data.values;
+        let pullRequests = response.data.values;    // handle no value in data response
 
         for(let i = 0; i < pullRequests.length; i++) {
 
             let pullRequest = pullRequests[i];
-            let event = buildEvent(name, pullRequest)            
-            eventWriter.writeEvent(event);      // catch errors (pass down error)
+            let event = buildEvent(pullRequest)            
+            let eventWriter = stream.eventWriter();
+            
+            eventWriter.writeEvent(event);          // handle event writter failures
         }
 
         let nextPageLink = response.data.next;
-        Logger.info(name, `next page is: ${nextPageLink}`)
+        logger.info(`next page is: ${nextPageLink}`)
         
         if (nextPageLink) {
             pageRef.nextPageLink = nextPageLink;
@@ -104,31 +86,45 @@ function handleResponse(pageRef, name, eventWriter, callback) {
     }
 }
 
-function handleError(name, callback) {
+function handleError(callback) {
 
     return (error) => {
  
         if (error.response) {  
 
-            Logger.error(name, `data: ${error.response.data} \n
-                                status: ${error.response.status} \n
-                                headers: ${error.response.headers}`);            
+            logger.error(`data: ${error.response.data} \n status: ${error.response.status} \n headers: ${error.response.headers}`);            
 
         } else if (error.request) {            
 
-            Logger.error(name, `no server response: ${JSON.stringify(error.request)}`);            
+            logger.error(`no server response: ${JSON.stringify(error.request)}`);            
 
         } else {
 
-            Logger.error(name, `configuration not set properly: ${error.message}`);           
+            logger.error(`configuration not set properly: ${error.message}`);           
         }
 
-        Logger.error(name, `config log: ${JSON.stringify(error.config)}`);                
+        logger.error(`config log: ${JSON.stringify(error.config)}`);                
         callback(error);
     }
 }
 
-function buildEvent(name, pullRequest) {
+function callback() {
+
+    return (error) => {
+
+        let done = stream.doneFunction();
+
+        if (error) {
+            done(error);
+        } else {
+            done();
+        }
+
+        // SCRIPT DIES HERE
+    }
+}
+
+function buildEvent(pullRequest) {
 
     let data = {
         id: pullRequest.id,
@@ -142,7 +138,7 @@ function buildEvent(name, pullRequest) {
     };
 
     return new Event({
-        stanza: name,
+        stanza: stream.stanzaName(),
         sourcetype: "bitbucket_prs",
         data: data,
         time: Date.parse(pullRequest.created_on)
