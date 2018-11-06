@@ -5,13 +5,18 @@ const splunk = require('./splunk');
 const http = require('./http');
 const config = require('./config');
 const logger = require('./logger');
-const event = require('./event')
+const event = require('./event');
 
 const Async = splunkjs.Async;
-const ModularInputs = splunkjs.ModularInputs;
-const Event = ModularInputs.Event;
-
 const stream = config.stream;
+
+// TODOS:
+/*
+  - get the prs since the last 2 months  
+  - update open prs in splunk index -> to merge/declined requests (Prs x Branch)
+    - make it an scheduled report.
+  - time approval: how to get that info.      
+*/
 
 module.exports = (name, singleInput, eventWriter, done) => {
 
@@ -90,7 +95,7 @@ function handleError(callback) {
  
         if (error.response) {  
 
-            logger.error(`data: ${error.response.data} \n status: ${error.response.status} \n headers: ${error.response.headers}`);            
+            logger.error(`data: ${JSON.stringify(error.response.data)} \n status: ${error.response.status} \n headers: ${JSON.stringify(error.response.headers)}`);            
 
         } else if (error.request) {            
 

@@ -8,7 +8,7 @@ const stream = config.stream;
 function getLastIndexedEventId(callback) {
     
     let session = getSession();
-    let searchQuery = `search source=${stream.stanzaName()} to_repo="${stream.repoSlugInput()}" | sort -id | head 1`;
+    let searchQuery = `search source="${stream.stanzaName()}" to_repo="${stream.repoSlugInput()}" | sort -id | head 1`;
     logger.info(`issued query: ${searchQuery}`);
 
     session.oneshotSearch(searchQuery, {output_mode: "JSON"}, function(error, response) {
