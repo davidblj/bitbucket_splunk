@@ -1,4 +1,8 @@
 
+function setAxiosDefaults(axios) {
+
+}
+
 function buildQuery(eventId) {
 
     let stateConstraint = "(state=\"OPEN\" OR state=\"MERGED\")";
