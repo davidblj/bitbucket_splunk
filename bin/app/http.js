@@ -1,7 +1,7 @@
 const date = require('./date');
 
 function setAxiosDefaults(axios) {
-
+    
 }
 
 function buildQuery(eventId) {

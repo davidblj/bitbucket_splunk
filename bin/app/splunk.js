@@ -15,7 +15,7 @@ function getLastIndexedEventId(callback) {
 
         if (error) {            
             
-            logger.error(`search failed: ${error}`);                       
+            logger.error(`get last id, search failed: ${error}`);                       
             // SCRIPT DIES HERE
 
         } else {
@@ -27,6 +27,35 @@ function getLastIndexedEventId(callback) {
             callback(lastIndexedId);
         }
     });    
+}
+
+function updateOpenPrs(callback) {
+
+    let params = "| state=OPEN"
+
+    issueQuery(params, (error, response) => {
+
+        if (error) {
+
+            logger.error(`get open prs, search failed: ${error}`);                       
+            // SCRIPT DIES HERE            
+
+        } else {
+
+            // loop all open prs
+            // make a global search
+            logger.info(`oneshotSearch response: ${JSON.stringify(response)}`);
+        }
+    });   
+}
+
+function issueQuery(params, callback) {
+    
+    let session = getSession();
+    let searchQuery = `search source="${stream.stanzaName()}" to_repo="${stream.repoSlugInput()}" ${params}`;
+    logger.info(`issued query: ${searchQuery}`);
+
+    session.oneshotSearch(searchQuery, {output_mode: "JSON"}, callback);
 }
 
 function getSession() {

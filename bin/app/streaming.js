@@ -11,11 +11,12 @@ const Async = splunkjs.Async;
 const stream = config.stream;
 
 // TODOS:
-/*
-  - get the prs since the last 2 months  
-  - update open prs in splunk index -> to merge/declined requests (Prs x Branch)
-    - make it an scheduled report.
-  - time approval: how to get that info.      
+/*  
+    - update open prs in splunk index -> to merge/declined requests (Prs x Branch).
+        - make it an scheduled report.
+  
+    - time approval: how to get that info.
+    - fix no declined prs response ? 
 */
 
 module.exports = (name, singleInput, eventWriter, done) => {
