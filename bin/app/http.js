@@ -2,6 +2,7 @@ const date = require('./date');
 const axios = require('axios');
 const btoa = require('btoa');
 const config = require('./config');
+const http = require('./http');
 
 const stream = config.stream;
 
@@ -41,7 +42,28 @@ function buildQuery(eventId) {
     }
 }
 
+function handleHttpError(error) {
+
+    if (error.response) {  
+
+        logger.error(`data: ${JSON.stringify(error.response.data)} 
+                     \n status: ${error.response.status} 
+                     \n headers: ${JSON.stringify(error.response.headers)}`);            
+
+    } else if (error.request) {            
+
+        logger.error(`no server response: ${JSON.stringify(error.request)}`);            
+
+    } else {
+
+        logger.error(`configuration not set properly: ${error.message}`);           
+    }
+
+    logger.error(`axios request failed. request configuration is: ${JSON.stringify(error.config)}`);      
+}
+
 module.exports = {
     buildQuery,
-    getAxiosInstance
+    getAxiosInstance,
+    handleHttpError
 }

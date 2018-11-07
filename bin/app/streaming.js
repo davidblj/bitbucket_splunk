@@ -19,35 +19,30 @@ const stream = config.stream;
 
 module.exports = (name, singleInput, eventWriter, done) => {
 
-    stream.initialize({name, singleInput, eventWriter, done});    
-
-    let callback = getPullRequests();
-    splunk.getLastIndexedEventId(callback);
+    stream.initialize({name, singleInput, eventWriter, done});        
+    splunk.updateOpenPrs(getPullRequestsFrom);
 }
 
-function getPullRequests() {
+function getPullRequestsFrom(lastIndexedId) {
+    
+    let firstLink = http.buildQuery(lastIndexedId);
+    logger.info(`initial URI link: ${firstLink}`);
 
-    return (lastIndexedId) => {
-
-        let firstLink = http.buildQuery(lastIndexedId);
-        logger.info(`initial URI link: ${firstLink}`);
-
-        let pageRef = {
-            hasNextPage: true,
-            nextPageLink: firstLink
-        }
-
-        Async.whilst(() => pageRef.hasNextPage,
-                    getPage(pageRef),
-                    callback())
+    let pageRef = {
+        hasNextPage: true,
+        nextPageLink: firstLink
     }
+
+    Async.whilst(() => pageRef.hasNextPage,
+                getPage(pageRef),
+                callback());    
 }
 
 function getPage(pageRef) {
 
     return (callback) => {
 
-        let axios = http.getAxiosInstance
+        let axios = http.getAxiosInstance();
         axios.get(pageRef.nextPageLink)
             .then(handleResponse(pageRef, callback))
             .catch(handleError(callback));            
@@ -82,21 +77,8 @@ function handleResponse(pageRef, callback) {
 function handleError(callback) {
 
     return (error) => {
- 
-        if (error.response) {  
 
-            logger.error(`data: ${JSON.stringify(error.response.data)} \n status: ${error.response.status} \n headers: ${JSON.stringify(error.response.headers)}`);            
-
-        } else if (error.request) {            
-
-            logger.error(`no server response: ${JSON.stringify(error.request)}`);            
-
-        } else {
-
-            logger.error(`configuration not set properly: ${error.message}`);           
-        }
-
-        logger.error(`config log: ${JSON.stringify(error.config)}`);                
+        http.handleHttpError(error);
         callback(error);
     }
 }
