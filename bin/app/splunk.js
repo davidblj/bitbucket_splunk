@@ -43,11 +43,14 @@ function updateOpenPrs(callback) {
         } else {
 
             // loop all open prs
-            // make a global search
-            logger.info(`oneshotSearch response: ${JSON.stringify(response)}`);
+            // make an http call on that pr
+            // insert our new event
+            logger.info(`oneshotSearch response: ${JSON.stringify(response)}`);            
         }
     });   
 }
+
+// utils
 
 function issueQuery(params, callback) {
     

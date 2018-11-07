@@ -1,7 +1,20 @@
 const date = require('./date');
+const axios = require('axios');
+const btoa = require('btoa');
+const config = require('./config');
 
-function setAxiosDefaults(axios) {
-    
+const stream = config.stream;
+
+function getAxiosInstance() {    
+
+    let instance = axios.create({
+            baseURL: `https://api.bitbucket.org/2.0/repositories/${stream.ownerInput()}/${stream.repoSlugInput()}/`,
+        });
+
+    let encondedAuthentication = btoa(`${stream.userInput()}:${stream.passwordInput()}`);
+    instance.defaults.headers.common['Authorization'] = `Basic ${encondedAuthentication}`;
+
+    return instance;
 }
 
 function buildQuery(eventId) {
@@ -29,5 +42,6 @@ function buildQuery(eventId) {
 }
 
 module.exports = {
-    buildQuery: buildQuery
+    buildQuery,
+    getAxiosInstance
 }

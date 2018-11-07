@@ -1,5 +1,4 @@
 const splunkjs = require('splunk-sdk');
-const axios = require('axios');
 const btoa = require('btoa');
 const splunk = require('./splunk');
 const http = require('./http');
@@ -14,7 +13,6 @@ const stream = config.stream;
 /*  
     - update open prs in splunk index -> to merge/declined requests (Prs x Branch).
         - make it an scheduled report.
-  
     - time approval: how to get that info.
     - fix no declined prs response ? 
 */
@@ -22,8 +20,6 @@ const stream = config.stream;
 module.exports = (name, singleInput, eventWriter, done) => {
 
     stream.initialize({name, singleInput, eventWriter, done});    
-
-    axiosConfig();
 
     let callback = getPullRequests();
     splunk.getLastIndexedEventId(callback);
@@ -47,18 +43,11 @@ function getPullRequests() {
     }
 }
 
-function axiosConfig() {
-    
-    axios.defaults.baseURL = `https://api.bitbucket.org/2.0/repositories/${stream.ownerInput()}/${stream.repoSlugInput()}/`;
-    
-    let encondedAuthentication = btoa(`${stream.userInput()}:${stream.passwordInput()}`);
-    axios.defaults.headers.common['Authorization'] = `Basic ${encondedAuthentication}`;
-}
-
 function getPage(pageRef) {
 
     return (callback) => {
 
+        let axios = http.getAxiosInstance
         axios.get(pageRef.nextPageLink)
             .then(handleResponse(pageRef, callback))
             .catch(handleError(callback));            
