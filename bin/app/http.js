@@ -2,7 +2,7 @@ const date = require('./date');
 const axios = require('axios');
 const btoa = require('btoa');
 const config = require('./config');
-const http = require('./http');
+const logger = require('./logger');
 
 const stream = config.stream;
 

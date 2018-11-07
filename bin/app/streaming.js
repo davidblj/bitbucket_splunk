@@ -1,5 +1,4 @@
 const splunkjs = require('splunk-sdk');
-const btoa = require('btoa');
 const splunk = require('./splunk');
 const http = require('./http');
 const config = require('./config');
