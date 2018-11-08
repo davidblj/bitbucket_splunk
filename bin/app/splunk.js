@@ -92,7 +92,7 @@ function updatePullRequest(pullRequest, positionRef, finalize) {
     axios.get(`pullrequests/${id}`)
         .then((response) => {
 
-            logger.info(`fetch opened pullrequest with id ${id} and title ${response.data.title}`);                                    
+            logger.info(`fetch opened pullrequest with id: ${id} and title: ${response.data.title}`);                                    
             let state = response.data.state;
             let newPullRequest = response.data;
 
@@ -122,12 +122,12 @@ function replacePullRequest(newPullRequest, oldPullRequestId, positionRef, final
 
         if (error) {            
             
-            logger.error(`failed to delete a pullrequest with id ${id}`);
+            logger.error(`failed to delete a pullrequest with id ${oldPullRequestId}`);
             finalize(error);
 
         } else {
 
-            logger.info(`replacing an OPENED pullrequest with id: ${id}`);
+            logger.info(`replacing an OPEN pullrequest with id: ${oldPullRequestId}`);
             event.writeEvent(newPullRequest);
             
             positionRef.position = positionRef.position + 1;    

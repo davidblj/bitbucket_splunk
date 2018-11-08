@@ -9,7 +9,7 @@ function writeEvent(pullRequest) {
 
     let event = buildEventFrom(pullRequest);            
     let eventWriter = stream.eventWriter();
-    
+        
     eventWriter.writeEvent(event);          // handle event writter failures
 }
 
