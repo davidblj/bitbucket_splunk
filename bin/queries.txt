@@ -1,0 +1,6 @@
+
+Pullrequests abiertos
+
+    source="bitbucket_pull_requests://pc" state=OPEN earliest=-60d latest=now
+    | stats count by to_branch
+
