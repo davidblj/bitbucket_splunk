@@ -26,7 +26,7 @@ function getLastIndexedEventId(callback) {
             
             callback(lastIndexedId);
         }
-    });        
+    });
 }
 
 function updateOpenPrs(callback) {

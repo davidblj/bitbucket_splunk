@@ -8,14 +8,6 @@ const event = require('./event');
 const Async = splunkjs.Async;
 const stream = config.stream;
 
-// TODOS:
-/*  
-    - update open prs in splunk index -> to merge/declined requests (Prs x Branch).
-        - make it an scheduled report.
-    - time approval: how to get that info.
-    - fix no declined prs response ? 
-*/
-
 module.exports = (name, singleInput, eventWriter, done) => {
 
     stream.initialize({name, singleInput, eventWriter, done});        
@@ -52,9 +44,10 @@ function handleResponse(pageRef, callback) {
     
     return (response) => {
 
-        let pullRequests = response.data.values;    // handle no value in data response (?)
+        let pullRequests = response.data.values; 
 
-        for(let i = 0; i < pullRequests.length; i++) {
+        // TODO: Use a for each. 
+        for(let i = 0; i < pullRequests.length; i++) { 
 
             let pullRequest = pullRequests[i];
             event.writeEvent(pullRequest);

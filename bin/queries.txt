@@ -1,6 +1,27 @@
+316 8261836 jesus andres cruz 
 
-Pullrequests abiertos
+schedulred report: earliest=-60d latest=now.
 
-    source="bitbucket_pull_requests://pc" state=OPEN earliest=-60d latest=now
+Pullrequests abiertos por branch
+
+    source="bitbucket_pull_requests://pc" state=OPEN
     | stats count by to_branch
 
+Pull requests cerrados por branch
+
+    source="bitbucket_pull_requests://pc" state=MERGED 
+    | stats count by to_branch
+
+Pull requests declinados por branch    
+
+    source="bitbucket_pull_requests://pc" state=DECLINED 
+    | stats count by to_branch
+
+----- notas ------
+
+903 - 316 8261836 - 15389 jesus andres cruz: arquitecto de splunk. 
+
+dns: holmeslab.suramericana.com.co
+port: 9089
+
+alternative: http event collector

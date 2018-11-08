@@ -24,6 +24,8 @@ function buildQuery(eventId) {
     let dateConstraint = `created_on > ${date.snapMonthsTo(2)}`;
     let globalConstraint = `${stateConstraint} AND ${dateConstraint}`;
 
+    let participantsValue = encodeURIComponent("+values.participants");
+    let participants = `fields=${participantsValue}`;
     let pageLength = "pagelen=25";
 
     if (eventId) {
@@ -32,13 +34,13 @@ function buildQuery(eventId) {
         let query = encodeURIComponent(`${globalConstraint} AND ${idConstraint}`);
         let sortById = "sort=id";        
 
-        return `pullrequests?q=${query}&${pageLength}&${sortById}`;    
+        return `pullrequests?q=${query}&${pageLength}&${sortById}&${participants}`;    
 
     } else {
 
         let query = encodeURIComponent(`${globalConstraint}`);
 
-        return `pullrequests?q=${query}&${pageLength}`;
+        return `pullrequests?q=${query}&${pageLength}&${participants}`;
     }
 }
 

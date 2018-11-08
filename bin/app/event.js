@@ -10,7 +10,8 @@ function writeEvent(pullRequest) {
     let event = buildEventFrom(pullRequest);            
     let eventWriter = stream.eventWriter();
         
-    eventWriter.writeEvent(event);          // handle event writter failures
+    // TODO: handle write failures
+    eventWriter.writeEvent(event);
 }
 
 function buildEventFrom(pullRequest) {
@@ -23,7 +24,8 @@ function buildEventFrom(pullRequest) {
         author: pullRequest.author.username,
         state: pullRequest.state, 
         from_repo: pullRequest.destination.repository.name,
-        to_repo: pullRequest.source.repository.name,                        
+        to_repo: pullRequest.source.repository.name,
+        approvers: getApprovers(pullRequest)                               
     };
 
     return new Event({
@@ -32,6 +34,25 @@ function buildEventFrom(pullRequest) {
         data: data,
         time: Date.parse(pullRequest.created_on)
     });
+}
+
+function getApprovers(pullRequest) {
+
+    let participants = pullRequest.participants;
+    let approvers = [];
+    
+    participants.forEach(participant => {
+        let author = participant.user.username;     
+        if (participant.approved) approvers.push(author);
+    });
+
+    let prHasApprovers = approvers.length > 0;
+    
+    if (prHasApprovers) {
+        return approvers.join(",");
+    } else {
+        return '';
+    }   
 }
 
 module.exports = {
