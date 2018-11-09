@@ -15,7 +15,7 @@ function getLastIndexedEventId(callback) {
 
         if (error) {            
             
-            logger.error(`search failed while trying to get the last id: ${JSON.stringify(error)}`);                       
+            logger.error(`search failed while trying to get the last indexed id: ${JSON.stringify(error)}`);                       
             // SCRIPT DIES HERE
             
         } else {

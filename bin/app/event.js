@@ -51,7 +51,7 @@ function getApprovers(pullRequest) {
     if (prHasApprovers) {
         return approvers.join(",");
     } else {
-        return '';
+        return "";
     }   
 }
 

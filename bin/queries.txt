@@ -17,6 +17,14 @@ Pull requests declinados por branch
     source="bitbucket_pull_requests://pc" state=DECLINED 
     | stats count by to_branch
 
+Aprovaciones por persona
+
+    source="bitbucket_pull_requests://pc"
+    | makemv delim="," approvers 
+    | stats count by approvers 
+    | sort -count
+
+
 ----- notas ------
 
 903 - 316 8261836 - 15389 jesus andres cruz: arquitecto de splunk. 
