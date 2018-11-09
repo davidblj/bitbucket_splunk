@@ -1,8 +1,9 @@
 const date = require('./date');
-const axios = require('axios');
-const btoa = require('btoa');
 const config = require('./config');
 const logger = require('./logger');
+
+const axios = require('axios');
+const btoa = require('btoa');
 
 const stream = config.stream;
 
@@ -22,25 +23,27 @@ function buildQuery(eventId) {
 
     let stateConstraint = "(state=\"OPEN\" OR state=\"MERGED\" OR state=\"DECLINED\")";
     let dateConstraint = `created_on > ${date.snapMonthsTo(2)}`;
-    let globalConstraint = `${stateConstraint} AND ${dateConstraint}`;
+    let globalQuery = `${stateConstraint} AND ${dateConstraint}`;
 
-    let participantsValue = encodeURIComponent("+values.participants");
-    let participants = `fields=${participantsValue}`;
+    let fieldsToAdd = encodeURIComponent("+values.participants");
+    let fieldsToTrim = encodeURIComponent("-values.description,-values.self,-values.summary");
+    let fields = `fields=${fieldsToAdd},${fieldsToTrim}`;
+    
     let pageLength = "pagelen=25";
 
     if (eventId) {
         
         let idConstraint = `id>${eventId}`;
-        let query = encodeURIComponent(`${globalConstraint} AND ${idConstraint}`);
+        let query = encodeURIComponent(`${globalQuery} AND ${idConstraint}`);
         let sortById = "sort=id";        
 
-        return `pullrequests?q=${query}&${pageLength}&${sortById}&${participants}`;    
+        return `pullrequests?q=${query}&${pageLength}&${sortById}&${fields}`;    
 
     } else {
 
-        let query = encodeURIComponent(`${globalConstraint}`);
+        let query = encodeURIComponent(`${globalQuery}`);
 
-        return `pullrequests?q=${query}&${pageLength}&${participants}`;
+        return `pullrequests?q=${query}&${pageLength}&${fields}`;
     }
 }
 
