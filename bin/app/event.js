@@ -25,7 +25,8 @@ function buildEventFrom(pullRequest) {
         state: pullRequest.state, 
         from_repo: pullRequest.destination.repository.name,
         to_repo: pullRequest.source.repository.name,
-        approvers: getApprovers(pullRequest)                               
+        approvers: getApprovers(pullRequest),
+        merge_time_hours: getMergeTime(pullRequest)                               
     };
 
     return new Event({
@@ -53,6 +54,28 @@ function getApprovers(pullRequest) {
     } else {
         return "";
     }   
+}
+
+function getMergeTime(pullRequest) {
+
+    let pullRequestIsMerged = pullRequest.state === "MERGED";
+
+    if (pullRequestIsMerged) {
+
+        let dateCreatedInMs = new Date(pullRequest.created_on).getTime();
+        let dateMergedInMs = new Date(pullRequest.updated_on).getTime();
+        let timeElapsed = dateMergedInMs - dateCreatedInMs;
+
+        return getHours(timeElapsed);
+
+    } else {
+
+        return "";
+    }
+}
+
+function getHours(miliseconds) {
+    return miliseconds / 1000 / 60 / 60;
 }
 
 module.exports = {
