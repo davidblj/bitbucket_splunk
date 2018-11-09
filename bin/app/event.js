@@ -75,7 +75,11 @@ function getMergeTime(pullRequest) {
 }
 
 function getHours(miliseconds) {
-    return miliseconds / 1000 / 60 / 60;
+    
+    let hours = miliseconds / 1000 / 60 / 60;
+    let roundedHours = Math.ceil(hours);
+
+    return roundedHours;
 }
 
 module.exports = {
