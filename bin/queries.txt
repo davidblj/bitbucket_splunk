@@ -1,6 +1,6 @@
 316 8261836 jesus andres cruz 
 
-schedulred report: earliest=-60d latest=now.
+schedulred report: earliest=-60d latest=now
 
 Pullrequests abiertos por branch
 
@@ -24,6 +24,11 @@ Aprovaciones por persona
     | stats count by approvers 
     | sort -count
 
+Promedio de aprovacion por semana
+
+    source="bitbucket_pull_requests://pc" 
+    | eval _time=relative_time(_time,"@w1")
+    | stats avg(merge_time_hours) by _time
 
 ----- notas ------
 
