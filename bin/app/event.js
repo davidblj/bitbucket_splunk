@@ -1,22 +1,24 @@
 const splunkjs = require('splunk-sdk');
+const splunkLogging = require('splunk-logging').Logger;
 const config = require('./config');
+const logger = require('./logger');
 
-const ModularInputs = splunkjs.ModularInputs;
-const Event = ModularInputs.Event;
 const stream = config.stream;
 
 function writeEvent(pullRequest) {
 
-    let event = buildEventFrom(pullRequest);            
-    let eventWriter = stream.eventWriter();
+    let event = getEventFrom(pullRequest);            
         
-    // TODO: handle write failures
-    eventWriter.writeEvent(event);
+    let eventWriter = new splunkLogging(getConfig());
+    setErrorHandlerTo(eventWriter);
+
+    logger.info(`sending event ! ${stream.stanzaName()}`)
+    eventWriter.send(event);
 }
 
-function buildEventFrom(pullRequest) {
+function getEventFrom(pullRequest) {
     
-    let data = {
+    let event = {
         id: pullRequest.id,
         title: pullRequest.title,
         to_branch: pullRequest.destination.branch.name,
@@ -29,12 +31,15 @@ function buildEventFrom(pullRequest) {
         merge_time_hours: getMergeTime(pullRequest)                               
     };
 
-    return new Event({
-        stanza: stream.stanzaName(),
-        sourcetype: "bitbucket_prs",
-        data: data,
-        time: Date.parse(pullRequest.created_on)
-    });
+    return {
+        message: event,
+        metadata: {
+            time: Date.parse(pullRequest.created_on),
+            source: stream.stanzaName(),
+            sourcetype: "bitbucket_prs",
+            index: "main",            
+        }
+    }
 }
 
 function getApprovers(pullRequest) {
@@ -80,6 +85,24 @@ function getHours(miliseconds) {
     let roundedHours = Math.ceil(hours);
 
     return roundedHours;
+}
+
+function getConfig() {
+
+    return {
+        token: "B5AEABF1-8C34-49AB-A927-61509B383949",
+        url: "http://localhost:8088/services/collector",
+        batchInterval: 500,
+        maxBatchCount: 25,
+        maxBatchSize: 100000
+    } 
+}
+
+function setErrorHandlerTo(eventWriter) {
+    
+    eventWriter.error = function (error, context) {
+        logger.error(`HEC error: ${error}, in context: ${context}`)
+    }
 }
 
 module.exports = {

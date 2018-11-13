@@ -1,12 +1,13 @@
 {
-    "name": "bitbucket_pull_requests",
-    "version": "0.0.1",
-    "description": "Splunk modular input for Bitbucket",
-    "main": "bitbucket_pull_requests.js",
-    "dependencies": {
-        "axios": "^0.18.0",
-        "btoa": "^1.2.1",
-        "splunk-sdk": ">=1.4.0"
-    },
-    "author": "David Jaramillo"
+  "name": "bitbucket_pull_requests",
+  "version": "0.0.1",
+  "description": "Splunk modular input for Bitbucket",
+  "main": "bitbucket_pull_requests.js",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "btoa": "^1.2.1",
+    "splunk-logging": "^0.10.1",
+    "splunk-sdk": ">=1.4.0"
+  },
+  "author": "David Jaramillo"
 }

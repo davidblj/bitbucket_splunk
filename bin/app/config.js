@@ -25,6 +25,15 @@ let stream = {
     },
     passwordInput: () => {
         return streamStore.singleInput.password;
+    },
+    portInput: () => {
+        return streamStore.singleInput.port;
+    },
+    hostnameInput: () => {
+        return streamStore.singleInput.hostname;
+    },
+    tokenINput: () => {
+        return streamStore.singleInput.token;
     }
 };
 
