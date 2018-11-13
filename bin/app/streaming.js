@@ -7,10 +7,13 @@ const event = require('./event');
 
 const Async = splunkjs.Async;
 const stream = config.stream;
+const splunkLogger = config.splunkLogger;
 
 module.exports = (name, singleInput, eventWriter, done) => {
 
     stream.initialize({name, singleInput, eventWriter, done});        
+    splunkLogger.initialize();
+
     splunk.updateOpenPrs(getPullRequestsFrom);
 }
 

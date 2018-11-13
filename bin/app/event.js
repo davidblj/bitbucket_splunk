@@ -1,19 +1,14 @@
-const splunkjs = require('splunk-sdk');
-const splunkLogging = require('splunk-logging').Logger;
 const config = require('./config');
-const logger = require('./logger');
 
 const stream = config.stream;
+const splunkLogger = config.splunkLogger.getInstance();
 
 function writeEvent(pullRequest) {
 
     let event = getEventFrom(pullRequest);            
-        
-    let eventWriter = new splunkLogging(getConfig());
-    setErrorHandlerTo(eventWriter);
 
-    logger.info(`sending event ! ${stream.stanzaName()}`)
-    eventWriter.send(event);
+    logger.info(`sending event !`);
+    splunkLogger.send(event);
 }
 
 function getEventFrom(pullRequest) {
@@ -85,24 +80,6 @@ function getHours(miliseconds) {
     let roundedHours = Math.ceil(hours);
 
     return roundedHours;
-}
-
-function getConfig() {
-
-    return {
-        token: "B5AEABF1-8C34-49AB-A927-61509B383949",
-        url: "http://localhost:8088/services/collector",
-        batchInterval: 500,
-        maxBatchCount: 25,
-        maxBatchSize: 100000
-    } 
-}
-
-function setErrorHandlerTo(eventWriter) {
-    
-    eventWriter.error = function (error, context) {
-        logger.error(`HEC error: ${error}, in context: ${context}`)
-    }
 }
 
 module.exports = {
