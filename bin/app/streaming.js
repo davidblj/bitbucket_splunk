@@ -44,28 +44,22 @@ function handleResponse(pageRef, callback) {
     
     return (response) => {
 
-        // todo: set next page function
-        let nextPageLink = response.data.next;
-        logger.info(`next page is: ${nextPageLink}`);
-
-        if (nextPageLink) {
-            pageRef.nextPageLink = nextPageLink;
-        } else {
-            pageRef.hasNextPage = false;
-        }
+        setNextPageFromResponse(pageRef, response);
 
         let pullRequests = response.data.values; 
-        let batch = [];
+        if (pullRequests.length > 0) {
 
-        // TODO: Use a for each. 
-        for(let i = 0; i < pullRequests.length; i++) { 
+            let batch = [];
+            pullRequests.forEach(pullRequest => {
+                let newEvent = event.buildEventFrom(pullRequest);
+                batch.push(newEvent);
+            })        
+            
+            writeBatchToSplunk(batch, callback);
 
-            let pullRequest = pullRequests[i];
-            let newEvent = event.buildEventFrom(pullRequest);
-            batch.push(newEvent);
+        } else {
+            callback(null);
         }
-        
-        writeBatch(batch, callback)
     }
 }
 
@@ -96,15 +90,30 @@ function callback() {
 
 // utils 
 
-function writeBatch(batch, callback) {
+function setNextPageFromResponse(pageRef, response) {
+
+    let nextPageLink = response.data.next;
+    logger.info(`next page is: ${nextPageLink}`);
+
+    if (nextPageLink) {
+        pageRef.nextPageLink = nextPageLink;
+    } else {
+        pageRef.hasNextPage = false;
+    }
+}
+
+function writeBatchToSplunk(batch, callback) {
 
     let payload = format(batch);
-    logger.info(`batch to send ${payload}`);
+    logger.info(`batch to send is: ${payload}`);
 
     let axios = http.getAxiosEventCollectorInstance();
     axios.post('', payload)
         .then(response => callback(null))
-        .catch(error => callback(error));
+        .catch(error => {
+            http.handleHttpError(error);
+            callback(error)
+        });
 }
 
 function format(batch) {
