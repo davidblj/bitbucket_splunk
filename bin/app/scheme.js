@@ -30,7 +30,7 @@ module.exports = () => {
             new Argument({
                 name: "user",
                 dataType: Argument.dataTypeString,
-                description: "Tu usuario con el que inicias sesión en bitbucket y que tiene acceso al repositorio del dueño",
+                description: "El usuario con el que se inicia sesión en bitbucket y que tiene acceso al repositorio del dueño",
                 requiredOnCreate: true,
                 requiredOnEdit: false
             }),
@@ -38,6 +38,27 @@ module.exports = () => {
                 name: "password",
                 dataType: Argument.dataTypeString,
                 description: "La contraseña de tu usuario",
+                requiredOnCreate: true,
+                requiredOnEdit: false
+            }),
+            new Argument({
+                name: "hostname",
+                dataType: Argument.dataTypeString,
+                description: "El nombre del host de splunk enterprise",
+                requiredOnCreate: true,
+                requiredOnEdit: false
+            }),
+            new Argument({
+                name: "port",
+                dataType: Argument.dataTypeString,
+                description: "El puerto del colector de eventos http de splunk",
+                requiredOnCreate: true,
+                requiredOnEdit: false
+            }),
+            new Argument({
+                name: "token",
+                dataType: Argument.dataTypeString,
+                description: "El token de autenticacion del splunk para el colector de eventos",
                 requiredOnCreate: true,
                 requiredOnEdit: false
             })

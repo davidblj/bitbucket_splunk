@@ -23,10 +23,10 @@ function getAxiosInstance() {
 function getAxiosEventCollectorInstance() {
 
     let instance = axios.create({
-        baseURL: `http://localhost:8088/services/collector/event`
+        baseURL: `http://${stream.hostnameInput()}:${stream.portInput()}/services/collector/event`
     });
 
-    instance.defaults.headers.common['Authorization'] = 'Splunk B5AEABF1-8C34-49AB-A927-61509B383949';
+    instance.defaults.headers.common['Authorization'] = `Splunk ${stream.tokenInput()}`;
     instance.defaults.headers.common['Content-Type'] = 'text/plain';
 
     return instance;

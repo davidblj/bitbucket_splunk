@@ -6,3 +6,6 @@ owner = <value>
 repository = <value>
 user = <value>
 password = <value>
+hostname = <value>
+port = <value>
+token = <value>
