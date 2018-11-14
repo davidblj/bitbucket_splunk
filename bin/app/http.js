@@ -7,6 +7,7 @@ const btoa = require('btoa');
 
 const stream = config.stream;
 
+// getAxios
 function getAxiosInstance() {    
 
     let instance = axios.create({
@@ -15,6 +16,18 @@ function getAxiosInstance() {
 
     let encondedAuthentication = btoa(`${stream.userInput()}:${stream.passwordInput()}`);
     instance.defaults.headers.common['Authorization'] = `Basic ${encondedAuthentication}`;
+
+    return instance;
+}
+
+function getAxiosEventCollectorInstance() {
+
+    let instance = axios.create({
+        baseURL: `http://localhost:8088/services/collector/event`
+    });
+
+    instance.defaults.headers.common['Authorization'] = 'Splunk B5AEABF1-8C34-49AB-A927-61509B383949';
+    instance.defaults.headers.common['Content-Type'] = 'text/plain';
 
     return instance;
 }
@@ -70,5 +83,6 @@ function handleHttpError(error) {
 module.exports = {
     buildQuery,
     getAxiosInstance,
+    getAxiosEventCollectorInstance,
     handleHttpError
 }

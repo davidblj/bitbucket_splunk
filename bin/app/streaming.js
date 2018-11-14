@@ -44,15 +44,7 @@ function handleResponse(pageRef, callback) {
     
     return (response) => {
 
-        let pullRequests = response.data.values; 
-
-        // TODO: Use a for each. 
-        for(let i = 0; i < pullRequests.length; i++) { 
-
-            let pullRequest = pullRequests[i];
-            event.writeEvent(pullRequest);
-        }
-
+        // todo: set next page function
         let nextPageLink = response.data.next;
         logger.info(`next page is: ${nextPageLink}`);
 
@@ -61,8 +53,19 @@ function handleResponse(pageRef, callback) {
         } else {
             pageRef.hasNextPage = false;
         }
+
+        let pullRequests = response.data.values; 
+        let batch = [];
+
+        // TODO: Use a for each. 
+        for(let i = 0; i < pullRequests.length; i++) { 
+
+            let pullRequest = pullRequests[i];
+            let newEvent = event.buildEventFrom(pullRequest);
+            batch.push(newEvent);
+        }
         
-        callback(null);
+        writeBatch(batch, callback)
     }
 }
 
@@ -89,4 +92,26 @@ function callback() {
 
         // SCRIPT DIES HERE
     }
+}
+
+// utils 
+
+function writeBatch(batch, callback) {
+
+    let payload = format(batch);
+    logger.info(`batch to send ${payload}`);
+
+    let axios = http.getAxiosEventCollectorInstance();
+    axios.post('', payload)
+        .then(response => callback(null))
+        .catch(error => callback(error));
+}
+
+function format(batch) {
+
+    let formattedBatch = batch.map(event => JSON.stringify(event));
+    let stringifiedBatch = "";
+    
+    formattedBatch.forEach(event => stringifiedBatch = stringifiedBatch.concat(event));
+    return stringifiedBatch;
 }

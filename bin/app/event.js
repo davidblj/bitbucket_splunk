@@ -5,15 +5,6 @@ const ModularInputs = splunkjs.ModularInputs;
 const Event = ModularInputs.Event;
 const stream = config.stream;
 
-function writeEvent(pullRequest) {
-
-    let event = buildEventFrom(pullRequest);            
-    let eventWriter = stream.eventWriter();
-        
-    // TODO: handle write failures
-    eventWriter.writeEvent(event);
-}
-
 function buildEventFrom(pullRequest) {
     
     let data = {
@@ -29,12 +20,12 @@ function buildEventFrom(pullRequest) {
         merge_time_hours: getMergeTime(pullRequest)                               
     };
 
-    return new Event({
-        stanza: stream.stanzaName(),
+    return {
+        source: stream.stanzaName(),
         sourcetype: "bitbucket_prs",
-        data: data,
-        time: Date.parse(pullRequest.created_on)
-    });
+        time: Date.parse(pullRequest.created_on),
+        event: data,
+    };
 }
 
 function getApprovers(pullRequest) {
@@ -83,5 +74,5 @@ function getHours(miliseconds) {
 }
 
 module.exports = {
-    writeEvent
+    buildEventFrom,
 }
