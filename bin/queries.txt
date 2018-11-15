@@ -28,7 +28,10 @@ Promedio de aprovacion por semana
 
     source="bitbucket_pull_requests://pc" 
     | eval _time=relative_time(_time,"@w1")
-    | stats avg(merge_time_hours) by _time
+    | stats avg(merge_time_hours) by _time 
+    | rename avg(merge_time_hours) as Promedio,
+    | eval Promedio=round(Promedio,1) 
+    | eval _time=strftime(_time,"%m-%d")
 
 ----- notas ------
 
