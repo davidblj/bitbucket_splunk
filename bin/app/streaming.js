@@ -19,28 +19,25 @@ function getPullRequestsFrom(lastIndexedId) {
     let firstLink = http.buildQuery(lastIndexedId);
     logger.info(`initial URI link: ${firstLink}`);
 
-    let pageRef = {
-        hasNextPage: true,
-        nextPageLink: firstLink
-    }
+    let pageRef = { hasNextPage: true, nextPageLink: firstLink }
 
     Async.whilst(() => pageRef.hasNextPage,
                 getPage(pageRef),
-                callback());    
+                doAfter);    
 }
 
 function getPage(pageRef) {
 
     return (callback) => {
 
-        let axios = http.getAxiosInstance();
+        let axios = http.getAxiosBitbucketInstance();
         axios.get(pageRef.nextPageLink)
             .then(handleResponse(pageRef, callback))
             .catch(handleError(callback));            
     }
 }
 
-function handleResponse(pageRef, callback) {
+function handleResponse(pageRef, finalize) {
     
     return (response) => {
 
@@ -55,10 +52,10 @@ function handleResponse(pageRef, callback) {
                 batch.push(newEvent);
             })        
             
-            writeBatchToSplunk(batch, callback);
+            writeBatchToSplunk(batch, finalize);
 
         } else {
-            callback(null);
+            finalize(null);
         }
     }
 }
@@ -72,20 +69,17 @@ function handleError(callback) {
     }
 }
 
-function callback() {
+function doAfter(error) {
 
-    return (error) => {
+    let done = stream.doneFunction();
 
-        let done = stream.doneFunction();
-
-        if (error) {
-            done(error);
-        } else {
-            done();
-        }
-
-        // SCRIPT DIES HERE
+    if (error) {
+        done(error);
+    } else {
+        done();
     }
+
+    // SCRIPT DIES HERE
 }
 
 // utils 
@@ -102,17 +96,17 @@ function setNextPageFromResponse(pageRef, response) {
     }
 }
 
-function writeBatchToSplunk(batch, callback) {
+function writeBatchToSplunk(batch, finalize) {
 
     let payload = format(batch);
     logger.info(`batch to send is: ${payload}`);
 
     let axios = http.getAxiosEventCollectorInstance();
     axios.post('', payload)
-        .then(response => callback(null))
+        .then(response => finalize(null))
         .catch(error => {
             http.handleHttpError(error);
-            callback(error)
+            finalize(error)
         });
 }
 

@@ -7,7 +7,6 @@ const event = require('./event');
 const Async = splunkjs.Async;
 const stream = config.stream;
 
-// TODO: use promises to make a more sequential code with async/await
 function getLastIndexedEventId(callback) {
     
     let params = "| sort -id | head 1";
@@ -32,7 +31,6 @@ function getLastIndexedEventId(callback) {
 function updateOpenPrs(callback) {
 
     let params = "state=OPEN | fields id state"
-
     issueQuery(params, (error, response) => {
 
         if (error) {
@@ -48,24 +46,9 @@ function updateOpenPrs(callback) {
             let openPullRequestsLength = openPullRequests.length;
             let positionRef = { position: 0 }
 
-            Async.whilst(
-            () => {
-
-                return positionRef.position < openPullRequestsLength;
-            },
-            (finalize) => {
-
-                updatePullRequest(openPullRequests[positionRef.position], positionRef, finalize);
-            }, 
-            (error) => {
-
-                if (!error) {
-                    getLastIndexedEventId(callback);
-                } else {
-                    let done = stream.doneFunction();
-                    done(error);
-                }     
-            })            
+            Async.whilst(() => positionRef.position < openPullRequestsLength,
+                        updatePullRequest(openPullRequests[positionRef.position], positionRef),
+                        doAfter(callback));            
         }
     });   
 }
@@ -84,12 +67,14 @@ function getLastId(response) {
     }
 }
 
-function updatePullRequest(pullRequest, positionRef, finalize) {
+function updatePullRequest(pullRequest, positionRef) {
 
-    let axios = http.getAxiosInstance();
-    let id = pullRequest.id;                                        
+    return (finalize) => {
 
-    axios.get(`pullrequests/${id}`)
+        let axios = http.getAxiosBitbucketInstance();
+        let id = pullRequest.id;                                        
+
+        axios.get(`pullrequests/${id}`)
         .then((response) => {
 
             logger.info(`fetch opened pullrequest with id: ${id} and title: ${response.data.title}`);                                    
@@ -112,6 +97,20 @@ function updatePullRequest(pullRequest, positionRef, finalize) {
             http.handleHttpError(error);
             finalize(error);            
         });
+    }
+}
+
+function doAfter(callback) {
+
+    return (error) => {
+
+        if (!error) {
+            getLastIndexedEventId(callback);
+        } else {
+            let done = stream.doneFunction();
+            done(error);
+        }
+    }
 }
 
 function replacePullRequest(newPullRequest, oldPullRequestId, positionRef, finalize) {

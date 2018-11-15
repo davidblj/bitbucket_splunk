@@ -8,7 +8,7 @@ const btoa = require('btoa');
 const stream = config.stream;
 
 // getAxios
-function getAxiosInstance() {    
+function getAxiosBitbucketInstance() {    
 
     let instance = axios.create({
             baseURL: `https://api.bitbucket.org/2.0/repositories/${stream.ownerInput()}/${stream.repoSlugInput()}/`,
@@ -82,7 +82,7 @@ function handleHttpError(error) {
 
 module.exports = {
     buildQuery,
-    getAxiosInstance,
+    getAxiosBitbucketInstance,
     getAxiosEventCollectorInstance,
     handleHttpError
 }
