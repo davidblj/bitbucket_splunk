@@ -5,17 +5,20 @@ schedulred report: earliest=-60d latest=now
 Pullrequests abiertos por branch
 
     source="bitbucket_pull_requests://pc" state=OPEN
-    | stats count by to_branch
+    | stats count by to_branch 
+    | rename to_branch as Branch, count as Cantidad
 
 Pull requests cerrados por branch
 
     source="bitbucket_pull_requests://pc" state=MERGED 
     | stats count by to_branch
+    | rename to_branch as Branch, count as Cantidad
 
 Pull requests declinados por branch    
 
     source="bitbucket_pull_requests://pc" state=DECLINED 
     | stats count by to_branch
+    | rename to_branch as Branch, count as Cantidad
 
 Aprovaciones por persona
 
@@ -23,6 +26,7 @@ Aprovaciones por persona
     | makemv delim="," approvers 
     | stats count by approvers 
     | sort -count
+    | rename approvers as Usuario, count as Aprobaciones
 
 Promedio de aprovacion por semana
 
